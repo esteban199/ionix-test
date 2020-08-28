@@ -23,6 +23,7 @@ class Home extends React.Component {
   state = {
     modalIsOpen: false,
     modalLoading: false,
+    saveUserLoading: false,
     dni: "",
     user: null
   }
@@ -34,12 +35,9 @@ class Home extends React.Component {
     if (dni) {
       this.setState({ modalLoading: true }, async () => {
         try {
-          const encryptedDni = encrypt(dni)
-          console.log("encryptedDni: ", encryptedDni)
+          const encryptedDni = await encrypt(dni)
           const url = `https://sandbox.ionix.cl/test-tecnico/search?rut=${encryptedDni}`
-          console.log("post url: ", url)
           const response = await axios.get(url)
-          console.log("response: ", response)
           if (response.data &&
             response.data.result &&
             response.data.result.items &&
@@ -49,7 +47,7 @@ class Home extends React.Component {
             this.toggleMenu()
             Alert.alert(
               "Contacto",
-              `${user.details.phone_number}, ${user.details.email}`,
+              `${user.detail.phone_number}, ${user.detail.email}`,
               [
                 {
                   text: "Ok",
@@ -75,32 +73,32 @@ class Home extends React.Component {
     }
   }
 
-  saveUser = async () => {
+  saveUser = () => {
     const { user } = this.state;
     if (user) {
       try {
-        const response = await axios.post(fullUrl, user, {
-          headers: {
-            'content-type': 'application/json',
-            'accept-language': language,
-            'access-token': isAuth ? token : '',
-
-          }
-        })
-        console.log("saveUser / response: ", response);
-        Alert.alert(
-          "Usuario creado.",
-          `Id del usuario: ${response.userId}`,
-          [
-            {
-              text: "Ok",
-              onPress: () => null,
-              style: 'cancel',
+        this.setState({ saveUserLoading: true }, async () => {
+          const response = await axios.post("https://jsonplaceholder.typicode.com/users", user, {
+            headers: {
+              'content-type': 'application/json; charset=UTF-8',
             }
-          ],
-          { cancelable: false }
-        );
+          })
+          Alert.alert(
+            "Usuario creado.",
+            `Id del usuario: ${response.data.id}`,
+            [
+              {
+                text: "Ok",
+                onPress: () => null,
+                style: 'cancel',
+              }
+            ],
+            { cancelable: false }
+          );
+          this.setState({ saveUserLoading: false })
+        })
       } catch (e) {
+        this.setState({ saveUserLoading: false })
         alert("Error de conexión, intente mas tarde.")
       }
     } else {
@@ -125,7 +123,12 @@ class Home extends React.Component {
   };
 
   render() {
-    const { modalIsOpen, dni, modalLoading } = this.state;
+    const {
+      modalIsOpen,
+      dni,
+      modalLoading,
+      saveUserLoading
+    } = this.state;
     return (
       <View style={styles.container}>
         <ImageBackground source={bgImage} style={styles.imageBackgroundContainer}>
@@ -134,9 +137,13 @@ class Home extends React.Component {
               <FontAwesomeIcon icon={faDollarSign} style={styles.icon} />
               <Text style={styles.buttonTitle}>Pagar</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => this.saveUser()} style={styles.buttonContainer}>
-              <FontAwesomeIcon icon={faWallet} style={styles.icon} />
-              <Text style={styles.buttonTitle}>Billetera</Text>
+            <TouchableOpacity onPress={() => !saveUserLoading ? this.saveUser() : null} style={styles.buttonContainer}>
+              {saveUserLoading
+                ? <ActivityIndicator size="large" color="black" />
+                : <>
+                  <FontAwesomeIcon icon={faWallet} style={styles.icon} />
+                  <Text style={styles.buttonTitle}>Billetera</Text>
+                </>}
             </TouchableOpacity>
             <TouchableOpacity style={styles.buttonContainer}>
               <FontAwesomeIcon icon={faMapMarkedAlt} style={styles.icon} />

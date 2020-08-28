@@ -1,14 +1,26 @@
-import CryptoJS from "crypto-js";
+const Des = require('react-native-des-cbc');
 import config from '../../config';
 
-const decrypt = (data) => {
-    const decrypted = CryptoJS.DES.decrypt(data, String(config.CRYPTO_JS_SECRET_KEY));
-    return decrypted;
+const encrypt = (data) => {
+    return new Promise((resolve, reject) => {
+        Des.encrypt(data, String(config.CRYPTO_JS_SECRET_KEY), function (base64) {
+            console.log("base64: ", base64)
+            resolve(base64)
+            return
+        }, function () {
+            reject();
+        });
+    })
 }
 
-const encrypt = (data) => {
-    const ciphertext = CryptoJS.DES.encrypt(data, String(config.CRYPTO_JS_SECRET_KEY)).toString();
-    return ciphertext;
+const decrypt = (base64) => {
+    return new Promise((resolve, reject) => {
+        Des.decrypt(base64, String(config.CRYPTO_JS_SECRET_KEY), function(text) {
+            resolve(text);
+        }, function(){
+            reject();
+        });
+    })
 }
 
 export {
