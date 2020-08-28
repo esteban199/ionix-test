@@ -4,7 +4,6 @@ import config from '../../config';
 const encrypt = (data) => {
     return new Promise((resolve, reject) => {
         Des.encrypt(data, String(config.CRYPTO_JS_SECRET_KEY), function (base64) {
-            console.log("base64: ", base64)
             resolve(base64)
             return
         }, function () {

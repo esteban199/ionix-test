@@ -63,7 +63,6 @@ class Home extends React.Component {
             this.setState({ modalLoading: false })
           }
         } catch (e) {
-          console.log("saveDni / error: ", e)
           alert("Error de conexión, intente mas tarde.")
           this.setState({ modalLoading: false })
         }
