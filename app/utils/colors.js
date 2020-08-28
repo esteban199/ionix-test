@@ -1,0 +1,1 @@
+export const TRANSPARENT_WHITE = "rgba(255,255,255, 0.95)"
